@@ -38,7 +38,7 @@ const LocationList = () => {
   // Check if no locations exist
   const renderLocations = () => {
     if (loading) {
-      return <div>Loading....</div>;
+      return <div>Loading Locations....</div>;
     }
 
     if (locations.length === 0) {
