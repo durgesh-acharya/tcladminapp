@@ -48,6 +48,6 @@ jobs:
           ls -R .next || exit 1  # List the contents of the .next directory for debugging
 
           # Restart the app using pm2 (adjust the pm2 name if necessary)
-          /root/.nvm/versions/node/v22.14.0/bin/pm2 restart nextjs-app || /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app" -- start
+          /root/.nvm/versions/node/v22.14.0/bin/pm2 restart nextjs-app admin --updated-env || /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app admin" -- start
 
         EOF
