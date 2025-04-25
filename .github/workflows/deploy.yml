@@ -1,0 +1,53 @@
+name: Deploy Next.js to VPS
+
+on:
+  push:
+    branches:
+      - main  # Adjust this to your branch if needed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # The job will run on a virtual Ubuntu environment
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2  # This will check out your repository's code
+
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.3  # Sets up SSH authentication
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the private SSH key from GitHub Secrets
+
+    - name: Deploy to VPS
+      run: |
+        # Ensure SSH can connect without strict host key checking
+        ssh -o StrictHostKeyChecking=no root@103.168.18.92 -p 7576 << 'EOF'
+          # Source NVM to ensure the correct Node environment is loaded
+          source /root/.nvm/nvm.sh
+          nvm use 22.14.0  # Ensure the correct Node.js version is used
+
+          # Navigate to the Next.js app directory
+          cd /var/www/tcladminapp || exit 1  # Ensure the directory exists
+
+          # Stash any local changes to avoid merge conflicts
+          git stash || true  # 'true' ensures it doesn't fail if there's nothing to stash
+
+          # Pull the latest changes from GitHub
+          git pull origin main
+
+          # Optionally, apply the stashed changes (if any)
+          git stash pop || true
+
+          # Install or update dependencies
+          npm install
+
+          # Run the build to generate .next/static
+          npm run build
+
+          # Debugging step: Ensure .next/static is created
+          ls -R .next || exit 1  # List the contents of the .next directory for debugging
+
+          # Restart the app using pm2 (adjust the pm2 name if necessary)
+          /root/.nvm/versions/node/v22.14.0/bin/pm2 restart nextjs-app || /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app" -- start
+
+        EOF
