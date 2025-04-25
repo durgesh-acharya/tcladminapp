@@ -55,7 +55,7 @@ const LocationList = () => {
           <div key={location.locations_id} className="bg-white p-4 rounded-lg shadow-lg">
             <div className="relative w-full h-48 mb-4">
               <Image
-                src={`http://103.168.18.92/assets/${location.locations_url}`}
+                src={`http://103.168.18.92/${location.locations_url}`}
                 alt={location.locations_name}
                 layout="fill"
                 objectFit="cover"
