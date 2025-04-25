@@ -1,8 +1,10 @@
 
 export default function Home() {
   return (
-    <div>
-      <h1>Travelers Clan Admin App Deployement on vps </h1>
+    <div className="flex items-center justify-center h-screen">
+      <h1 className="text-3xl font-extrabold text-center">
+        Travelers Clan
+      </h1>
     </div>
   );
 }
