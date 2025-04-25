@@ -42,7 +42,7 @@ jobs:
           npm install
 
           # Run the build to generate .next/static
-          npm run build
+          npx run build
 
           # Debugging step: Ensure .next/static is created
           ls -R .next || exit 1  # List the contents of the .next directory for debugging
@@ -50,16 +50,13 @@ jobs:
           # Kill anything on port 4000 just in case
           sudo fuser -k 4000/tcp || true
 
-          # Delete ALL existing "nextjs-app admin" processes
+          cd /var/www/tcladminapp
           /root/.nvm/versions/node/v22.14.0/bin/pm2 delete "nextjs-app admin" || true
-
-          # Start the app fresh
           /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app admin" -- start --update-env
 
           # Save state
           /root/.nvm/versions/node/v22.14.0/bin/pm2 save
 
-          # # Restart the app using pm2 (adjust the pm2 name if necessary)
-          # /root/.nvm/versions/node/v22.14.0/bin/pm2 restart nextjs-app admin --updated-env || /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app admin" -- start
+          
 
         EOF
