@@ -36,7 +36,7 @@ const CreateLocationPage = () => {
 
       try {
         result = JSON.parse(text);
-      } catch (e) {
+      } catch {
         console.error("Non-JSON response:", text);
         throw new Error("Invalid response from server");
       }
@@ -47,9 +47,10 @@ const CreateLocationPage = () => {
 
       console.log("Location created:", result);
       router.push("/locations");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error submitting location:", err);
-      alert(err.message || "An error occurred");
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      alert(errorMessage);
     }
   };
 
