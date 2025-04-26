@@ -64,11 +64,11 @@ const LocationList = () => {
             </div>
             <h2 className="text-xl font-semibold">{location.locations_name}</h2>
             <div className="mt-4 flex gap-3">
-              <Link href={`/locations/${location.locations_id}`}>
+              {/* <Link href={`/locations/${location.locations_id}`}>
                 <h6 className="bg-green-500 text-white py-1 px-3 rounded-md shadow-sm hover:bg-green-600 transition">
                   View
                 </h6>
-              </Link>
+              </Link> */}
               <Link href={`/locations/edit/${location.locations_id}`}>
                 <h6 className="bg-yellow-500 text-white py-1 px-3 rounded-md shadow-sm hover:bg-yellow-600 transition">
                   Edit

@@ -48,9 +48,9 @@ const CreateLocationPage = () => {
       console.log("Location created:", result);
       router.push("/locations");
     } catch (err: unknown) {
-      console.error("Error submitting location:", err);
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      alert(errorMessage);
+       console.error("Error submitting location:", err);
+  const errorMessage = err instanceof Error ? err.message : "An error occurred";
+  alert(errorMessage);
     }
   };
 

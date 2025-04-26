@@ -1,33 +1,55 @@
 'use client';
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import Image from "next/image";
 type Props = {
   onSubmit: (data: {
     locationName: string;
     isActive: 1 | 0;
     image: File | null;
   }) => void;
+  initialData?: {
+    locationName: string;
+    isActive: 1 | 0;
+    imageUrl?: string;
+  };
 };
 
-const LocationForms = ({ onSubmit }: Props) => {
+const LocationForms = ({ onSubmit, initialData }: Props) => {
   const [locationName, setLocationName] = useState('');
   const [isActive, setIsActive] = useState<1 | 0>(1);
   const [image, setImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setLocationName(initialData.locationName);
+      setIsActive(initialData.isActive);
+      setPreviewUrl(initialData.imageUrl || '');
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!locationName || !image) {
-      alert('Please fill in all required fields.');
+    if (!locationName) {
+      alert('Please enter location name.');
       return;
     }
 
+    // For edit, image can be optional
     onSubmit({ locationName, isActive, image });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files.length > 0) {
       setImage(e.target.files[0]);
+
+      // Show preview of selected file
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        setPreviewUrl(fileReader.result as string);
+      };
+      fileReader.readAsDataURL(e.target.files[0]);
     }
   };
 
@@ -77,10 +99,23 @@ const LocationForms = ({ onSubmit }: Props) => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Upload Location Image</label>
+          <label className="block text-sm font-medium text-gray-700">Location Image</label>
+          {previewUrl && (
+            <div className="mb-2">
+              <p className="text-sm text-gray-500">Preview:</p>
+              <Image
+               src={previewUrl.startsWith("http") ? previewUrl : `http://103.168.18.92${previewUrl}`}
+               alt="Preview"
+               layout="fill"
+              objectFit="cover"
+              className="rounded shadow"
+              />
+            </div>
+          )}
           <input
             type="file"
             onChange={handleFileChange}
+            accept="image/*"
             className="mt-1 block w-full p-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
