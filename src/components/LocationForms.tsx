@@ -106,10 +106,11 @@ const LocationForms = ({ onSubmit, initialData }: Props) => {
               <Image
                src={previewUrl.startsWith("http") ? previewUrl : `http://103.168.18.92${previewUrl}`}
                alt="Preview"
-               layout="fill"
+               width={128}
+               height={128}
               objectFit="cover"
               className="rounded shadow"
-              />
+            />
             </div>
           )}
           <input
