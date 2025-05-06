@@ -8,11 +8,11 @@ const navItems = [
   { name: "Locations", href: "/locations" },
   { name: "Durations", href: "/durations" },
   { name: "Stay Category", href: "/staycategories" },
-  { name: "Routes", href: "/destinationroutes" },
+  // { name: "Routes", href: "/destinationroutes" },
   { name: "Location wise Durations", href: "/locationdurations" },
   { name: "Package", href: "/packages" },
   { name: "Activity", href: "/locations" },
-  { name: "Blogs", href: "/locations" },
+  { name: "Blogs", href: "/blogs" },
   { name: "Inquiry", href: "/locations" },
 ];
 

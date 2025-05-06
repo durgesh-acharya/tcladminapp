@@ -115,10 +115,10 @@ const LocationDurationsPage: React.FC = () => {
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Link
-                        href={`/locationdurations/edit/${location.locationdurations_id}`}
+                        href={`/locationdurations/${location.locationdurations_id}/destinationroutes`}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 text-sm rounded"
                       >
-                        Edit
+                        Routes
                       </Link>
                       <button
                         onClick={() => handleDelete(location.locationdurations_id)}
