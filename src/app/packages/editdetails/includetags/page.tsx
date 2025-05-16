@@ -15,87 +15,158 @@ const IncludePage = () => {
 
   const [includes, setIncludes] = useState<Include[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
+  const [tagName, setTagName] = useState('');
 
+  // Fetch includes from API
   useEffect(() => {
     if (packageId) {
       fetch(`http://103.168.18.92/api/include/package/${packageId}`)
         .then((res) => res.json())
-        .then((data) => setIncludes(data.data || []))
-        .catch((err) => console.error(err));
+        .then((data) => {
+          if (data.status) {
+            setIncludes(data.data);
+          } else {
+            setIncludes([]);
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching includes:', error);
+          setIncludes([]);
+        });
     }
   }, [packageId]);
 
-  const handleAddInclude = async () => {
-    if (!newTagName.trim()) return alert("Tag name is required");
+  // Handle submit (create include)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!packageId) {
+      alert('Package ID is required');
+      return;
+    }
 
-    const res = await fetch('http://103.168.18.92/api/include/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        include_includtagname: newTagName,
-        include_packageid: Number(packageId),
-      }),
-    });
+    const newInclude = {
+      include_includtagname: tagName,
+      include_packageid: Number(packageId),
+    };
 
-    const result = await res.json();
-    if (result.status) {
-      setIncludes(prev => [...prev, result.data[0]]);
-      setShowModal(false);
-      setNewTagName('');
-    } else {
-      alert('Failed to add include');
+    try {
+      const res = await fetch('http://103.168.18.92/api/includes/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInclude),
+      });
+
+      const result = await res.json();
+      if (result.status) {
+        const refreshed = await fetch(`http://103.168.18.92/api/includes/package/${packageId}`);
+        const data = await refreshed.json();
+        setIncludes(data.data);
+        setShowModal(false);
+        setTagName('');
+      } else {
+        alert('Failed to add include');
+      }
+    } catch (error) {
+      console.error('Error adding include:', error);
+      alert('Error adding include. Please try again.');
     }
   };
 
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold text-gray-800 mb-6">Package ID: {packageId}</h1>
+  const handleAdd = () => setShowModal(true);
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-gray-700">Include Tags</h2>
+  const handleDelete = (id: number) => {
+    const confirmed = confirm('Are you sure you want to delete this include tag?');
+    if (confirmed) {
+      setIncludes((prev) => prev.filter((item) => item.include_id !== id));
+    }
+  };
+
+  const handleEdit = (id: number) => {
+    alert(`Edit clicked for ID ${id}`);
+  };
+
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Includes</h1>
         <button
-          onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={handleAdd}
+          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
         >
-          Add Include
+          Add Include Tag
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {includes.map(tag => (
-          <div
-            key={tag.include_id}
-            className="p-4 border rounded-lg bg-white shadow text-center"
-          >
-            {tag.include_includtagname}
-          </div>
-        ))}
-      </div>
+      <p className="mb-4 text-gray-700">Package ID: {packageId}</p>
+
+      {includes.length === 0 ? (
+        <p className="text-gray-600">No include tags found for this package.</p>
+      ) : (
+        <table className="min-w-full border border-gray-300 text-center">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-4 py-2 bg-black text-white">ID</th>
+              <th className="border px-4 py-2 bg-black text-white">Include Tag</th>
+              <th className="border px-4 py-2 bg-black text-white">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {includes.map((include) => (
+              <tr key={include.include_id}>
+                <td className="border px-4 py-2">{include.include_id}</td>
+                <td className="border px-4 py-2">{include.include_includtagname}</td>
+                <td className="border px-4 py-2 space-x-2">
+                  <button
+                    onClick={() => handleEdit(include.include_id)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(include.include_id)}
+                    className="bg-red-600 text-white px-3 py-1 m-2 rounded hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h3 className="text-lg font-semibold mb-4">Add New Include</h3>
-            <input
-              type="text"
-              value={newTagName}
-              onChange={e => setNewTagName(e.target.value)}
-              placeholder="Enter tag name"
-              className="w-full p-2 border rounded mb-4"
-            />
-            <div className="flex justify-end space-x-2">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">
-                Cancel
-              </button>
-              <button
-                onClick={handleAddInclude}
-                className="px-4 py-2 bg-black text-white rounded hover:bg-black-700"
-              >
-                Add
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <h2 className="text-xl font-bold mb-4">Add Include Tag</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Tag Name</label>
+                <input
+                  type="text"
+                  value={tagName}
+                  onChange={(e) => setTagName(e.target.value)}
+                  required
+                  className="w-full border px-3 py-2 rounded"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
