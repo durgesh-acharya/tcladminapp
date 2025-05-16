@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 type Include = {
   include_id: number;
@@ -174,4 +174,10 @@ const IncludePage = () => {
   );
 };
 
-export default IncludePage;
+export default function IncludePageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading include tags...</div>}>
+      <IncludePage />
+    </Suspense>
+  );
+}
