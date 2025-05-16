@@ -24,7 +24,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no root@103.168.18.92 -p 7576 << 'EOF'
           # Source NVM to ensure the correct Node environment is loaded
           source /root/.nvm/nvm.sh
-          nvm use 22.14.0  # Ensure the correct Node.js version is used
+          nvm use 18.0.0  # Ensure the correct Node.js version is used (e.g., Node.js 18.x)
 
           # Navigate to the Next.js app directory
           cd /var/www/tcladminapp || exit 1  # Ensure the directory exists
@@ -41,24 +41,25 @@ jobs:
           # Install or update dependencies
           npm install
 
-          # Run the build to generate .next/static
-          npm run build
+          # Remove the existing .next directory to avoid old builds
+          rm -rf .next || true
 
-          # Debugging step: Ensure .next/static is created
-          ls -R .next || exit 1  # List the contents of the .next directory for debugging
+          # Run the build to generate .next directory
+          npm run build || exit 1  # Ensure build is successful
 
-          # Kill anything on port 4000 just in case
+          # Debugging step: List contents of .next folder for confirmation
+          ls -R .next || exit 1  # Exit if .next folder is missing
+
+          # Kill any process on port 4000 just in case
           sudo fuser -k 4000/tcp || true
 
           # Delete ALL existing "nextjs-app admin" processes
-          /root/.nvm/versions/node/v22.14.0/bin/pm2 delete "nextjs-app admin" || true
+          /root/.nvm/versions/node/v18.0.0/bin/pm2 delete "nextjs-app admin" || true
 
           # Start the app fresh
-          /root/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app admin" -- start --update-env
+          /root/.nvm/versions/node/v18.0.0/bin/pm2 start npm --name "nextjs-app admin" -- start --update-env
 
-          # Save state
-          /root/.nvm/versions/node/v22.14.0/bin/pm2 save
-
-          
+          # Save PM2 state
+          /root/.nvm/versions/node/v18.0.0/bin/pm2 save
 
         EOF
