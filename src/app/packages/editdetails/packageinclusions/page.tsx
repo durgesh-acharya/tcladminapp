@@ -1,23 +1,24 @@
 'use client';
-import React, { useState, useEffect,useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import PackageInclusionCard from '@/components/PackageInclusionCard';
 import AddPackageInclusionModal from '@/components/AddPackageInclusionModal';
 import { useSearchParams } from 'next/navigation';
 
-// Define the type inline for clarity and self-containment
 interface PackageInclusion {
   packageinclusion_id: number;
   packageinclusion_inclusion: string;
   packageinclusion_packagesid: number;
 }
 
-const PackageInclusionsPage: React.FC = () => {
+const PackageInclusionsComponent: React.FC = () => {
   const searchParams = useSearchParams();
   const rawPackageId = searchParams.get('packageid');
   const packageId = rawPackageId ? parseInt(rawPackageId, 10) : 0;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inclusions, setInclusions] = useState<PackageInclusion[]>([]);
+
   const fetchInclusions = useCallback(async () => {
     try {
       const res = await fetch(`http://103.168.18.92/api/tourinclusion/package/${packageId}`);
@@ -26,9 +27,11 @@ const PackageInclusionsPage: React.FC = () => {
         setInclusions(json.data);
       } else {
         console.error('Failed to load inclusions:', json.message);
+        setInclusions([]);
       }
     } catch (error) {
       console.error('Error fetching inclusions:', error);
+      setInclusions([]);
     }
   }, [packageId]);
 
@@ -36,7 +39,7 @@ const PackageInclusionsPage: React.FC = () => {
     if (packageId) {
       fetchInclusions();
     }
-  }, [fetchInclusions,packageId]);
+  }, [fetchInclusions, packageId]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -52,12 +55,16 @@ const PackageInclusionsPage: React.FC = () => {
         </button>
       </div>
 
-      {inclusions.map((inclusion) => (
-        <PackageInclusionCard
-          key={inclusion.packageinclusion_id}
-          inclusion={inclusion.packageinclusion_inclusion}
-        />
-      ))}
+      {inclusions.length === 0 ? (
+        <p className="text-gray-600">No inclusions added yet for this package.</p>
+      ) : (
+        inclusions.map((inclusion) => (
+          <PackageInclusionCard
+            key={inclusion.packageinclusion_id}
+            inclusion={inclusion.packageinclusion_inclusion}
+          />
+        ))
+      )}
 
       <AddPackageInclusionModal
         isOpen={isModalOpen}
@@ -71,4 +78,10 @@ const PackageInclusionsPage: React.FC = () => {
   );
 };
 
-export default PackageInclusionsPage;
+export default function PackageInclusionsPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading inclusions...</div>}>
+      <PackageInclusionsComponent />
+    </Suspense>
+  );
+}

@@ -1,5 +1,6 @@
 'use client';
-import React, { useCallback, useEffect, useState } from 'react';
+
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
 import KnowBeforeYouGoCard from '@/components/KnowBeforeYouGoCard';
 import AddKnowBeforeYouGoModal from '@/components/AddKnowBeforeYouGoModal';
 import { useSearchParams } from 'next/navigation';
@@ -10,7 +11,7 @@ interface KnowBeforeYouGoItem {
   knowbeforeyougo_packagesid: number;
 }
 
-const KnowBeforeYouGoPage = () => {
+const KnowBeforeYouGoComponent = () => {
   const searchParams = useSearchParams();
   const rawPackageId = searchParams.get('packageid');
   const packageId = rawPackageId ? parseInt(rawPackageId, 10) : 0;
@@ -38,7 +39,7 @@ const KnowBeforeYouGoPage = () => {
     if (packageId) {
       fetchPoints();
     }
-  },  [fetchPoints,packageId]);
+  }, [fetchPoints, packageId]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -54,9 +55,16 @@ const KnowBeforeYouGoPage = () => {
         </button>
       </div>
 
-      {points.map((item) => (
-        <KnowBeforeYouGoCard key={item.knowbeforeyougo} point={item.knowbeforeyougo_point} />
-      ))}
+      {points.length === 0 ? (
+        <p className="text-gray-600">No points added yet for this package.</p>
+      ) : (
+        points.map((item) => (
+          <KnowBeforeYouGoCard
+            key={item.knowbeforeyougo}
+            point={item.knowbeforeyougo_point}
+          />
+        ))
+      )}
 
       <AddKnowBeforeYouGoModal
         isOpen={isModalOpen}
@@ -68,4 +76,10 @@ const KnowBeforeYouGoPage = () => {
   );
 };
 
-export default KnowBeforeYouGoPage;
+export default function KnowBeforeYouGoPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading &quot;Know Before You Go&quot; points...</div>}>
+      <KnowBeforeYouGoComponent />
+    </Suspense>
+  );
+}

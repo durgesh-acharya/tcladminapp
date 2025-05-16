@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 type ItineraryHighlight = {
   itineraryhighlights_id: number;
@@ -10,7 +10,7 @@ type ItineraryHighlight = {
   itineraryhighlights_packagesid: number;
 };
 
-const ItineraryHighlightsPage = () => {
+const ItineraryHighlightsComponent = () => {
   const searchParams = useSearchParams();
   const packageId = searchParams.get('packageid');
 
@@ -19,26 +19,20 @@ const ItineraryHighlightsPage = () => {
   const [nights, setNights] = useState('');
   const [location, setLocation] = useState('');
 
-  // ✅ Fetch highlights from API based on packageId
   useEffect(() => {
-    if (packageId) {
-      fetch(`http://103.168.18.92/api/itineraryhighlights/package/${packageId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status) {
-            setHighlights(data.data);
-          } else {
-            setHighlights([]);
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching highlights:', error);
-          setHighlights([]);
-        });
-    }
+    if (!packageId) return;
+
+    fetch(`http://103.168.18.92/api/itineraryhighlights/package/${packageId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setHighlights(data.status ? data.data : []);
+      })
+      .catch((error) => {
+        console.error('Error fetching highlights:', error);
+        setHighlights([]);
+      });
   }, [packageId]);
 
-  // ✅ POST request to create a new highlight
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageId) return;
@@ -52,15 +46,12 @@ const ItineraryHighlightsPage = () => {
     try {
       const response = await fetch('http://103.168.18.92/api/itineraryhighlights/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newHighlight),
       });
 
       const result = await response.json();
       if (result.status) {
-        // Re-fetch updated list
         const refreshed = await fetch(`http://103.168.18.92/api/itineraryhighlights/package/${packageId}`);
         const data = await refreshed.json();
         setHighlights(data.data);
@@ -75,16 +66,12 @@ const ItineraryHighlightsPage = () => {
     }
   };
 
-  const handleAddHighlight = () => {
-    setShowModal(true);
-  };
+  const handleAddHighlight = () => setShowModal(true);
 
   const handleDelete = (id: number) => {
     const confirmed = confirm('Are you sure you want to delete this highlight?');
     if (confirmed) {
-      setHighlights((prev) =>
-        prev.filter((item) => item.itineraryhighlights_id !== id)
-      );
+      setHighlights((prev) => prev.filter((item) => item.itineraryhighlights_id !== id));
     }
   };
 
@@ -98,7 +85,7 @@ const ItineraryHighlightsPage = () => {
         <h1 className="text-2xl font-bold">Itinerary Highlights</h1>
         <button
           onClick={handleAddHighlight}
-          className="bg-black text-white px-4 py-2 rounded hover:bg-black transition cursor-pointer"
+          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
         >
           Add Highlight
         </button>
@@ -191,4 +178,10 @@ const ItineraryHighlightsPage = () => {
   );
 };
 
-export default ItineraryHighlightsPage;
+export default function ItineraryHighlightsPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading highlights...</div>}>
+      <ItineraryHighlightsComponent />
+    </Suspense>
+  );
+}

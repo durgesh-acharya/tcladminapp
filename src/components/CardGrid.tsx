@@ -13,7 +13,7 @@ const CardGrid = ({ packageId }: CardGridProps) => {
     { title: 'Itinerary', href: `/packages/editdetails/itinerary?packageid=${id}` },
     { title: 'Stay', href: `/packages/editdetails/stay?packageid=${id}` },
     { title: 'Transfer', href: `/packages/editdetails/transfers?packageid=${id}` },
-    { title: 'Activity', href: `/packages/editdetails/packageactivity?packageid=${id}` },
+    // { title: 'Activity', href: `/packages/editdetails/packageactivity?packageid=${id}` },
     { title: 'Trip Highlights', href: `/packages/editdetails/triphighlights?packageid=${id}`},
     { title: 'Inclusion', href: `/packages/editdetails/packageinclusions?packageid=${id}` },
     { title: 'Exclusion', href: `/packages/editdetails/packageexclusions?packageid=${id}` },

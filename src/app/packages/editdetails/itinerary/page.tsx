@@ -1,17 +1,17 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState,Suspense } from 'react';
 
 type Itinerary = {
   itineraries_id: number;
   itineraries_day: number;
-  itineraries_tiitle: string;            // ✅ match typo
+  itineraries_tiitle: string;
   itineraries_description: string;
-  itineraries_paackagesid: number;       // ✅ match typo
+  itineraries_paackagesid: number;
 };
 
-const ItineraryPage = () => {
+const ItineraryComponent = () => {
   const searchParams = useSearchParams();
   const packageId = searchParams.get('packageid');
 
@@ -21,28 +21,22 @@ const ItineraryPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
-  // Fetch itineraries from API
+  // Fetch itineraries
   useEffect(() => {
-    if (packageId) {
-      fetch(`http://103.168.18.92/api/itineraries/package/${packageId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status) {
-            setItineraries(data.data);
-          } else {
-            setItineraries([]);
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching itineraries:', error);
-          setItineraries([]);
-        });
-    }
+    if (!packageId) return;
+
+    fetch(`http://103.168.18.92/api/itineraries/package/${packageId}`)
+      .then((res) => res.json())
+      .then((data) => setItineraries(data.status ? data.data : []))
+      .catch((err) => {
+        console.error('Error fetching itineraries:', err);
+        setItineraries([]);
+      });
   }, [packageId]);
 
-  // Handle submit (create itinerary)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!packageId) {
       alert('Package ID is required');
       return;
@@ -50,13 +44,10 @@ const ItineraryPage = () => {
 
     const newItinerary = {
       itineraries_day: Number(day),
-      itineraries_tiitle: title, // Ensure correct field name
+      itineraries_tiitle: title,
       itineraries_description: description,
       itineraries_paackagesid: Number(packageId),
     };
-
-    // Log the data being sent
-    console.log('Submitting new itinerary:', newItinerary);
 
     try {
       const res = await fetch('http://103.168.18.92/api/itineraries/create', {
@@ -65,12 +56,8 @@ const ItineraryPage = () => {
         body: JSON.stringify(newItinerary),
       });
 
-      // Check the response status and log
       const result = await res.json();
-      console.log('Response from create itinerary:', result);
-
       if (result.status) {
-        // Re-fetch the updated itineraries
         const refreshed = await fetch(`http://103.168.18.92/api/itineraries/package/${packageId}`);
         const data = await refreshed.json();
         setItineraries(data.data);
@@ -87,12 +74,8 @@ const ItineraryPage = () => {
     }
   };
 
-  // Handle modal display
-  const handleAdd = () => {
-    setShowModal(true);
-  };
+  const handleAdd = () => setShowModal(true);
 
-  // Handle itinerary deletion
   const handleDelete = (id: number) => {
     const confirmed = confirm('Are you sure you want to delete this itinerary?');
     if (confirmed) {
@@ -100,7 +83,6 @@ const ItineraryPage = () => {
     }
   };
 
-  // Handle itinerary edit (basic functionality)
   const handleEdit = (id: number) => {
     alert(`Edit clicked for ID ${id}`);
   };
@@ -215,4 +197,10 @@ const ItineraryPage = () => {
   );
 };
 
-export default ItineraryPage;
+export default function ItineraryPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading itineraries...</div>}>
+      <ItineraryComponent />
+    </Suspense>
+  );
+}

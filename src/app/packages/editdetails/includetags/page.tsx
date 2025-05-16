@@ -50,7 +50,7 @@ const IncludePage = () => {
     };
 
     try {
-      const res = await fetch('http://103.168.18.92/api/includes/create', {
+      const res = await fetch('http://103.168.18.92/api/include/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInclude),
@@ -58,7 +58,7 @@ const IncludePage = () => {
 
       const result = await res.json();
       if (result.status) {
-        const refreshed = await fetch(`http://103.168.18.92/api/includes/package/${packageId}`);
+        const refreshed = await fetch(`http://103.168.18.92/api/include/package/${packageId}`);
         const data = await refreshed.json();
         setIncludes(data.data);
         setShowModal(false);

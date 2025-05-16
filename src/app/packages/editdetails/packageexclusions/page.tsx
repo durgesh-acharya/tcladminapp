@@ -1,17 +1,17 @@
 'use client';
-import React, { useCallback, useEffect, useState } from 'react';
+
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
 import PackageExclusionCard from '@/components/PackageExclusionCard';
 import AddPackageExclusionModal from '@/components/AddPackageExclusionModal';
 import { useSearchParams } from 'next/navigation';
 
-// Define the exclusion type inline
 interface PackageExclusion {
   packageexclusion_id: number;
   packageexclusion_exclusion: string;
   packageexclusion_packagesid: number;
 }
 
-const PackageExclusionsPage: React.FC = () => {
+const PackageExclusionsComponent: React.FC = () => {
   const searchParams = useSearchParams();
   const rawPackageId = searchParams.get('packageid');
   const packageId = rawPackageId ? parseInt(rawPackageId, 10) : 0;
@@ -27,15 +27,17 @@ const PackageExclusionsPage: React.FC = () => {
         setExclusions(json.data);
       } else {
         console.error('Failed to load exclusions:', json.message);
+        setExclusions([]);
       }
     } catch (err) {
       console.error('Error fetching exclusions:', err);
+      setExclusions([]);
     }
   }, [packageId]);
 
   useEffect(() => {
     if (packageId) fetchExclusions();
-  }, [fetchExclusions,packageId]);
+  }, [fetchExclusions, packageId]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -51,12 +53,16 @@ const PackageExclusionsPage: React.FC = () => {
         </button>
       </div>
 
-      {exclusions.map((exclusion) => (
-        <PackageExclusionCard
-          key={exclusion.packageexclusion_id}
-          exclusion={exclusion.packageexclusion_exclusion}
-        />
-      ))}
+      {exclusions.length === 0 ? (
+        <p className="text-gray-600">No exclusions added yet for this package.</p>
+      ) : (
+        exclusions.map((exclusion) => (
+          <PackageExclusionCard
+            key={exclusion.packageexclusion_id}
+            exclusion={exclusion.packageexclusion_exclusion}
+          />
+        ))
+      )}
 
       <AddPackageExclusionModal
         isOpen={isModalOpen}
@@ -70,4 +76,10 @@ const PackageExclusionsPage: React.FC = () => {
   );
 };
 
-export default PackageExclusionsPage;
+export default function PackageExclusionsPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading exclusions...</div>}>
+      <PackageExclusionsComponent />
+    </Suspense>
+  );
+}

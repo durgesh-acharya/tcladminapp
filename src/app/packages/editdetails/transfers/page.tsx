@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import AddTransferModal from '@/components/AddTransferModal';
 import TransferCard from '@/components/TransferCard';
 
@@ -22,7 +22,7 @@ type ApiResponse = {
   data: Transfer[];
 };
 
-const TransferPage = () => {
+const TransferComponent: React.FC = () => {
   const searchParams = useSearchParams();
   const packageId = searchParams.get('packageid');
 
@@ -30,7 +30,6 @@ const TransferPage = () => {
   const [loading, setLoading] = useState(true);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
-  // ✅ Fetch transfers
   useEffect(() => {
     if (!packageId) return;
 
@@ -56,7 +55,6 @@ const TransferPage = () => {
     fetchTransfers();
   }, [packageId]);
 
-  // ✅ Handle new transfer creation
   const handleAddTransfer = async (newTransfer: Omit<Transfer, 'transfers_id' | 'transfers_packagesid'>) => {
     if (!packageId) return;
 
@@ -77,10 +75,9 @@ const TransferPage = () => {
       const result = await res.json();
 
       if (result.status) {
-        // Refresh transfer list
         const refreshed = await fetch(`http://103.168.18.92/api/transfers/package/${packageId}`);
         const refreshedData = await refreshed.json();
-        setTransfers(refreshedData.data);
+        setTransfers(refreshedData.data || []);
         setIsTransferModalOpen(false);
       } else {
         console.error('Failed to create transfer:', result.message);
@@ -115,10 +112,18 @@ const TransferPage = () => {
       <AddTransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
-        onSave={handleAddTransfer} // Pass transfer data only (without ID or packageid)
+        onSave={handleAddTransfer}
       />
     </div>
   );
 };
 
-export default TransferPage;
+const TransferPageWithSuspense = () => {
+  return (
+    <Suspense fallback={<div>Loading transfers...</div>}>
+      <TransferComponent />
+    </Suspense>
+  );
+};
+
+export default TransferPageWithSuspense;

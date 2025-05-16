@@ -1,8 +1,8 @@
 'use client';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import TripHighlightCard from '@/components/TripHighlightCard';
 import AddTripHighlightModal from '@/components/AddTripHighlightModal';
-import { useSearchParams } from 'next/navigation';
 
 type TripHighlight = {
   triphighlights_id: number;
@@ -10,7 +10,7 @@ type TripHighlight = {
   triphighlights_packageid: number;
 };
 
-const TripHighlightsPage = () => {
+const TripHighlightsComponent: React.FC = () => {
   const searchParams = useSearchParams();
   const rawPackageId = searchParams.get('packageid');
   const packageId = rawPackageId ? parseInt(rawPackageId, 10) : 0;
@@ -36,7 +36,7 @@ const TripHighlightsPage = () => {
     if (packageId) {
       fetchHighlights();
     }
-  }, [ fetchHighlights,packageId]);
+  }, [fetchHighlights, packageId]);
 
   // ✅ Function to handle saving a new highlight
   const handleSave = async (highlightName: string) => {
@@ -93,11 +93,20 @@ const TripHighlightsPage = () => {
       <AddTripHighlightModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSave} 
+        onSave={handleSave}
         packageId={packageId}
       />
     </div>
   );
 };
 
-export default TripHighlightsPage;
+// Wrapping component in Suspense for async operations
+const TripHighlightsPageWithSuspense: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading trip highlights...</div>}>
+      <TripHighlightsComponent />
+    </Suspense>
+  );
+};
+
+export default TripHighlightsPageWithSuspense;
