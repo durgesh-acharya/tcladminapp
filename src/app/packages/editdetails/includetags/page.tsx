@@ -1,33 +1,33 @@
-'use client'
+'use client';
 
-import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 type Include = {
-  include_id: number
-  include_includtagname: string
-  include_packageid: number
-}
+  include_id: number;
+  include_includtagname: string;
+  include_packageid: number;
+};
 
 const IncludePage = () => {
-  const searchParams = useSearchParams()
-  const packageId = searchParams.get('packageid')
-  const [includes, setIncludes] = useState<Include[]>([])
-  const [showModal, setShowModal] = useState(false)
-  const [newTagName, setNewTagName] = useState('')
+  const searchParams = useSearchParams();
+  const packageId = searchParams.get('packageid');
 
-  // Fetch includes on mount
+  const [includes, setIncludes] = useState<Include[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+
   useEffect(() => {
     if (packageId) {
       fetch(`http://103.168.18.92/api/include/package/${packageId}`)
-        .then(res => res.json())
-        .then(data => setIncludes(data.data || []))
-        .catch(err => console.error(err))
+        .then((res) => res.json())
+        .then((data) => setIncludes(data.data || []))
+        .catch((err) => console.error(err));
     }
-  }, [packageId])
+  }, [packageId]);
 
   const handleAddInclude = async () => {
-    if (!newTagName.trim()) return alert("Tag name is required")
+    if (!newTagName.trim()) return alert("Tag name is required");
 
     const res = await fetch('http://103.168.18.92/api/include/create', {
       method: 'POST',
@@ -36,17 +36,17 @@ const IncludePage = () => {
         include_includtagname: newTagName,
         include_packageid: Number(packageId),
       }),
-    })
+    });
 
-    const result = await res.json()
+    const result = await res.json();
     if (result.status) {
-      setIncludes(prev => [...prev, result.data[0]])
-      setShowModal(false)
-      setNewTagName('')
+      setIncludes(prev => [...prev, result.data[0]]);
+      setShowModal(false);
+      setNewTagName('');
     } else {
-      alert('Failed to add include')
+      alert('Failed to add include');
     }
-  }
+  };
 
   return (
     <div className="p-6">
@@ -100,7 +100,7 @@ const IncludePage = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default IncludePage
+export default IncludePage;
