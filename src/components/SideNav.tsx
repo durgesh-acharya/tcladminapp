@@ -5,15 +5,16 @@ import { usePathname } from "next/navigation";
 
 
 const navItems = [
-  { name: "Locations", href: "/locations" },
+  { name: "Tours", href: "/packages" },
+  { name: "Activity", href: "/locations" },
+  { name: "Blogs", href: "/blogs" },
+  { name: "Inquiry", href: "/locations" },
+  { name: "Destinations", href: "/locations" },
   { name: "Durations", href: "/durations" },
   { name: "Stay Category", href: "/staycategories" },
   // { name: "Routes", href: "/destinationroutes" },
   { name: "Location wise Durations", href: "/locationdurations" },
-  { name: "Package", href: "/packages" },
-  { name: "Activity", href: "/locations" },
-  { name: "Blogs", href: "/blogs" },
-  { name: "Inquiry", href: "/locations" },
+
 ];
 
 export default function SideNav() {
