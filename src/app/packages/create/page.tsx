@@ -5,6 +5,7 @@ import Step2_Duration from '@/components/Step2_Duration';
 import Step3_Routes from '@/components/Step3_Routes';
 import Step4_StayCategory from '@/components/Step4_StayCategory';
 import Step5_Pricing from '@/components/Step5_Pricing';
+import { useRouter } from "next/navigation";
 
 type TourFormData = {
   location: number | null;
@@ -15,10 +16,12 @@ type TourFormData = {
   actualPrice: string;
   discountedPrice: string;
   isActive: 'yes' | 'no';
+  imageFile: File | null;
 };
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
+  const router = useRouter();
  // Updated initial state in MultiStepForm component
  const [formData, setFormData] = useState<TourFormData>({
   location: null,
@@ -29,6 +32,7 @@ const MultiStepForm = () => {
   actualPrice: '',
   discountedPrice: '',
   isActive: 'yes',
+  imageFile: null,
 });
 
   const handleNext = () => setStep(prev => prev + 1);
@@ -39,30 +43,33 @@ const MultiStepForm = () => {
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      packages_name: formData.title,
-      packages_actualprice: parseInt(formData.actualPrice),
-      packages_offerprice: parseInt(formData.discountedPrice),
-      packages_locationsid: formData.location,
-      packages_locationdurations: formData.duration,
-      packages_destinationroutesid: formData.routes,
-      packages_staycategoriesid: formData.stayCategory,
-      packages_isactive: formData.isActive === 'yes' ? 1 : 0,
-    };
+    if (!formData.imageFile) {
+      alert("Please upload an image.");
+      return;
+    }
+  
+    const form = new FormData();
+    form.append('packages_name', formData.title);
+    form.append('packages_actualprice', formData.actualPrice);
+    form.append('packages_offerprice', formData.discountedPrice);
+    form.append('packages_locationsid', String(formData.location));
+    form.append('packages_locationdurations', String(formData.duration));
+    form.append('packages_destinationroutesid', String(formData.routes));
+    form.append('packages_staycategoriesid', String(formData.stayCategory));
+    form.append('packages_isactive', formData.isActive === 'yes' ? '1' : '0');
+    form.append('image', formData.imageFile); 
   
     try {
       const response = await fetch('http://103.168.18.92/api/packages/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        body: form, // Don't set Content-Type manually!
       });
   
       const result = await response.json();
   
       if (response.ok) {
         alert('Package created successfully!');
+        router.push("/locations");
         console.log('Response:', result);
       } else {
         console.error('Server error:', result.message || result);
