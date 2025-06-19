@@ -88,6 +88,7 @@ const CreateLocationDurationPage = () => {
       const data = await response.json();
       console.log('Created successfully:', data);
       router.push('/locationdurations');
+      router.refresh();
     } catch (error) {
       console.error('Image upload or form submission failed:', error);
       alert('Failed to create entry. Check console for details.');

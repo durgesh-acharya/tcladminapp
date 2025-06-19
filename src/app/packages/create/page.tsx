@@ -69,7 +69,7 @@ const MultiStepForm = () => {
   
       if (response.ok) {
         alert('Package created successfully!');
-        router.push("/locations");
+        router.push("/packages");
         console.log('Response:', result);
       } else {
         console.error('Server error:', result.message || result);
