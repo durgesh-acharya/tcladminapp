@@ -80,15 +80,25 @@ const CreateLocationDurationPage = () => {
         method: 'POST',
         body: formData, // No need to set Content-Type manually
       });
-  
+      
+      const text = await response.text(); // safer than direct .json()
+      let result;
+
+      try {
+        result = JSON.parse(text);
+      } catch {
+        console.error("Non-JSON response:", text);
+        throw new Error("Invalid response from server");
+      }
+
       if (!response.ok) {
         throw new Error(`Failed to create: ${response.statusText}`);
       }
   
-      const data = await response.json();
-      console.log('Created successfully:', data);
+      // const data = await response.json();
+      console.log('Created successfully:', result);
       router.push('/locationdurations');
-      router.refresh();
+    
     } catch (error) {
       console.error('Image upload or form submission failed:', error);
       alert('Failed to create entry. Check console for details.');
