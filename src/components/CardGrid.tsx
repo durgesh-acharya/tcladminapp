@@ -18,6 +18,7 @@ const CardGrid = ({ packageId }: CardGridProps) => {
     { title: 'Inclusion', href: `/packages/editdetails/packageinclusions?packageid=${id}` },
     { title: 'Exclusion', href: `/packages/editdetails/packageexclusions?packageid=${id}` },
     { title: 'Know before you go', href: `/packages/editdetails/knowbeforeyougo?packageid=${id}`  },
+    { title: 'Pictures', href: `/packages/editdetails/pictures?packageid=${id}`},
   ];
 
   return (
