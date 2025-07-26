@@ -1,8 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+  Suspense,
+} from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 
 interface PackageImage {
   packageimages_id: number;
@@ -33,7 +39,7 @@ const getCategoryLabel = (category: string | number): string | null => {
   }
 };
 
-const Pictures = () => {
+const PicturesComponent: React.FC = () => {
   const searchParams = useSearchParams();
   const packageId = searchParams.get('packageid');
   const [images, setImages] = useState<PackageImage[]>([]);
@@ -50,7 +56,9 @@ const Pictures = () => {
     const fetchImages = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://103.168.18.92/api/packageimages/by-package/${packageId}`);
+        const res = await fetch(
+          `http://103.168.18.92/api/packageimages/by-package/${packageId}`
+        );
         const data = await res.json();
         setImages(data.data || []);
       } catch (error) {
@@ -87,8 +95,11 @@ const Pictures = () => {
         setIsModalOpen(false);
         setSelectedFile(null);
         setSelectedCategory('');
-        // Re-fetch images
-        const refreshed = await fetch(`http://103.168.18.92/api/packageimages/by-package/${packageId}`);
+
+        // Refresh images
+        const refreshed = await fetch(
+          `http://103.168.18.92/api/packageimages/by-package/${packageId}`
+        );
         const updated = await refreshed.json();
         setImages(updated.data || []);
       } else {
@@ -101,41 +112,42 @@ const Pictures = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Pictures for Package ID: {packageId}</h1>
-
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mb-6 bg-black text-white px-4 py-2 rounded hover:bg-black-700 transition"
-      >
-        + Add Image
-      </button>
-
-      {loading && <p>Loading images...</p>}
-
-      {!loading && images.length === 0 && (
-        <p className="text-center text-gray-500">No images found for this package.</p>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {images.map((img) => {
-          const label = getCategoryLabel(img.packageimages_category);
-          return (
-            <div key={img.packageimages_id} className="rounded shadow p-2">
-              <img
-                src={`http://103.168.18.92${img.packageimages_url}`}
-                alt={label || 'Package Image'}
-                className="w-full h-48 object-cover rounded transition-transform duration-300 hover:scale-105"
-              />
-              {label && (
-                <p className="text-center mt-2 text-gray-700 font-medium">
-                  {label}
-                </p>
-              )}
-            </div>
-          );
-        })}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Pictures for Package ID: {packageId}</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+        >
+          + Add Image
+        </button>
       </div>
+
+      {loading ? (
+        <p>Loading images...</p>
+      ) : images.length === 0 ? (
+        <p className="text-center text-gray-500">No images found for this package.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {images.map((img) => {
+            const label = getCategoryLabel(img.packageimages_category);
+            return (
+              <div key={img.packageimages_id} className="rounded shadow p-2">
+                <img
+                  src={`http://103.168.18.92${img.packageimages_url}`}
+                  alt={label || 'Package Image'}
+                  className="w-full h-48 object-cover rounded transition-transform duration-300 hover:scale-105"
+                />
+                {label && (
+                  <p className="text-center mt-2 text-gray-700 font-medium">
+                    {label}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (
@@ -190,4 +202,11 @@ const Pictures = () => {
   );
 };
 
-export default Pictures;
+// Exported with Suspense wrapper
+export default function PicturesPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading pictures...</div>}>
+      <PicturesComponent />
+    </Suspense>
+  );
+}
